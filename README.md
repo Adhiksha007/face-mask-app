@@ -87,8 +87,7 @@ streamlit run app.py
 
  ---
 
-**© 2025 Alchemy Vibes**  
-_This project is open-source. Built by Adhiksha Reddy_
+**© 2025 _This project is open-source. Built by Adhiksha Reddy_ **  
 
 ---
 
