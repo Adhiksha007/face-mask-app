@@ -23,6 +23,14 @@ if "vs" not in st.session_state:
 st.set_page_config(page_title="Face Mask Detector", layout="centered")
 st.title("😷 Face Mask Detection - Streamlit App")
 
+# Sidebar
+st.sidebar.title("🧠 Model Info")
+st.sidebar.markdown("""
+- **Face Detector:** OpenCV DNN
+- **Mask Classifier:** CNN (Keras)
+- **Author:** Adhiksha Reddy
+""")
+
 option = st.radio("Choose an input method:", ("Upload an Image", "Use Webcam"))
 
 if option == "Upload an Image":
@@ -76,3 +84,13 @@ elif option == "Use Webcam":
     else:
             st.warning("Cloud doesn't have access on physical camera.")
             st.warning("To Enable this Download the app and run in your system.")
+
+# Footer
+st.markdown("---")
+st.markdown(
+    "<div style='text-align: center;'>"
+    "Made with ❤️ by <b>Aldhiksha Reddy</b><br>"
+    "📫 Contact: <a href='mailto:uppalapatiadhikshareddy@gmail.com'>uppalapatiadhikshareddy@gmail.com</a>"
+    "</div>",
+    unsafe_allow_html=True
+)
