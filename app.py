@@ -5,7 +5,7 @@ import imutils
 import cv2
 import time
 import os
-from src.detector import detect_and_predict_mask
+from src.detector import detect_and_predict_mask, is_webcam_available
 from src.utils import predict_img
 
 # Load face detector model
@@ -29,10 +29,7 @@ st.title("😷 Face Mask Detection - Streamlit App")
 
 option = st.radio("Choose an input method:", ("Upload an Image", "Use Webcam"))
 
-if is_cloud and option == "Use Webcam":
-    st.warning("Cloud doesn't have access on physical camera.")
-    st.warning("To Enable this Download the app and run in your system.")
-elif option == "Upload an Image":
+if option == "Upload an Image":
     uploaded_file = st.file_uploader("Upload a photo", type=["jpg", "png", "jpeg"])
     if uploaded_file is not None:
         frame = predict_img(uploaded_file)
@@ -40,13 +37,17 @@ elif option == "Upload an Image":
 elif option == "Use Webcam":
     st.title("Webcam")
     FRAME_WINDOW = st.image([])
-
+    
     # Start button
-    if st.button("Start Detection", key="start_btn") and not st.session_state.detecting:
+    if st.button("Start Detection", key="start_btn") and not st.session_state.detecting and is_webcam_available():
         st.session_state.vs = VideoStream(src=0).start()
         time.sleep(2.0)
         st.session_state.detecting = True
         st.success("Started video stream")
+    else:
+        st.warning("Cloud doesn't have access on physical camera.")
+        st.warning("To Enable this Download the app and run in your system.")
+        # st.error("No webcam found or accessible on this device.")
 
     # Stop button
     if st.session_state.detecting and st.button("Stop Detection", key="stop_btn"):
