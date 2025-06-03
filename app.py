@@ -89,7 +89,7 @@ elif option == "Use Webcam":
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center;'>"
-    "Made with ❤️ by <b>Aldhiksha Reddy</b><br>"
+    "Made with ❤️ by <b>Adhiksha Reddy</b><br>"
     "📫 Contact: <a href='mailto:uppalapatiadhikshareddy@gmail.com'>uppalapatiadhikshareddy@gmail.com</a>"
     "</div>",
     unsafe_allow_html=True
