@@ -1,6 +1,14 @@
 import cv2
 import numpy as np
 
+def is_webcam_available(index=0):
+    cap = cv2.VideoCapture(index)
+    if not cap.isOpened():
+        cap.release()
+        return False
+    cap.release()
+    return True
+
 def detect_and_predict_mask(frame, faceNet, maskNet):
     (h, w) = frame.shape[:2]
     blob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300),
