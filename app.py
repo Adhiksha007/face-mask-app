@@ -4,7 +4,6 @@ from imutils.video import VideoStream
 import imutils
 import cv2
 import time
-import os
 from src.detector import detect_and_predict_mask, is_webcam_available
 from src.utils import predict_img
 
@@ -21,9 +20,6 @@ if "detecting" not in st.session_state:
 if "vs" not in st.session_state:
     st.session_state.vs = None
 
-# Determine if app is running in Streamlit Cloud
-is_cloud = os.getenv("STREAMLIT_SERVER_HEADLESS", None) == "1"
-
 st.set_page_config(page_title="Face Mask Detector", layout="centered")
 st.title("😷 Face Mask Detection - Streamlit App")
 
@@ -36,48 +32,47 @@ if option == "Upload an Image":
         st.image(frame, caption="Processed Image", channels="RGB", use_container_width=False)
 elif option == "Use Webcam":
     st.title("Webcam")
-    FRAME_WINDOW = st.image([])
+    if is_webcam_available():
+        FRAME_WINDOW = st.image([])
+        
+        # Start button
+        if st.button("Start Detection", key="start_btn") and not st.session_state.detecting:
+            st.session_state.vs = VideoStream(src=0).start()
+            time.sleep(2.0)
+            st.session_state.detecting = True
+            st.success("Started video stream")
     
-    # Start button
-    if st.button("Start Detection", key="start_btn") and not st.session_state.detecting and is_webcam_available():
-        st.session_state.vs = VideoStream(src=0).start()
-        time.sleep(2.0)
-        st.session_state.detecting = True
-        st.success("Started video stream")
+        # Stop button
+        if st.session_state.detecting and st.button("Stop Detection", key="stop_btn"):
+            st.session_state.detecting = False
+            st.session_state.vs.stop()
+            FRAME_WINDOW.empty()
+            st.success("Stopped video stream")
+    
+        # Detection loop (runs each time the script reruns)
+        if st.session_state.detecting:
+            frame = st.session_state.vs.read()
+            
+            
+            if frame is None:
+                st.warning("⚠️ Unable to read from webcam. Please ensure it’s connected and not in use.")
+            else:
+                frame = imutils.resize(frame, width=400)
+    
+                (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
+    
+                for (box, pred) in zip(locs, preds):
+                    (startX, startY, endX, endY) = box
+                    (mask, withoutMask) = pred
+                    label = "Mask" if mask > withoutMask else "No Mask"
+                    color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
+                    label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+                    cv2.putText(frame, label, (startX, startY - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
+                    cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+    
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                FRAME_WINDOW.image(frame)
     else:
-        st.warning("Cloud doesn't have access on physical camera.")
-        st.warning("To Enable this Download the app and run in your system.")
-        # st.error("No webcam found or accessible on this device.")
-
-    # Stop button
-    if st.session_state.detecting and st.button("Stop Detection", key="stop_btn"):
-        st.session_state.detecting = False
-        st.session_state.vs.stop()
-        FRAME_WINDOW.empty()
-        st.success("Stopped video stream")
-
-    # Detection loop (runs each time the script reruns)
-    if st.session_state.detecting:
-        frame = st.session_state.vs.read()
-        
-        
-        if frame is None:
-            st.warning("⚠️ Unable to read from webcam. Please ensure it’s connected and not in use.")
-        else:
-            frame = imutils.resize(frame, width=400)
-
-            (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
-
-            for (box, pred) in zip(locs, preds):
-                (startX, startY, endX, endY) = box
-                (mask, withoutMask) = pred
-                label = "Mask" if mask > withoutMask else "No Mask"
-                color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
-                label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
-                cv2.putText(frame, label, (startX, startY - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
-                cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            FRAME_WINDOW.image(frame)
-    
+            st.warning("Cloud doesn't have access on physical camera.")
+            st.warning("To Enable this Download the app and run in your system.")
