@@ -4,6 +4,7 @@ from imutils.video import VideoStream
 import imutils
 import cv2
 import time
+import os
 from src.detector import detect_and_predict_mask
 from src.utils import predict_img
 
@@ -20,12 +21,18 @@ if "detecting" not in st.session_state:
 if "vs" not in st.session_state:
     st.session_state.vs = None
 
+# Determine if app is running in Streamlit Cloud
+is_cloud = os.getenv("STREAMLIT_SERVER_HEADLESS", None) == "1"
+
 st.set_page_config(page_title="Face Mask Detector", layout="centered")
 st.title("😷 Face Mask Detection - Streamlit App")
 
 option = st.radio("Choose an input method:", ("Upload an Image", "Use Webcam"))
 
-if option == "Upload an Image":
+if is_cloud and option == "Use Webcam":
+    st.warning("Cloud doesn't have access on physical camera.")
+    st.warning("To Enable this Download the app and run in your system.")
+elif option == "Upload an Image":
     uploaded_file = st.file_uploader("Upload a photo", type=["jpg", "png", "jpeg"])
     if uploaded_file is not None:
         frame = predict_img(uploaded_file)
